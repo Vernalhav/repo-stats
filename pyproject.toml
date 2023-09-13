@@ -1,3 +1,7 @@
+[tool.isort]
+profile = "black"
+src_paths = ["repostats", "tests"]
+
 [build-system]
 requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
