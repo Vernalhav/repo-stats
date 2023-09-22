@@ -1,11 +1,10 @@
 import asyncio
 import datetime
 import itertools
-from dataclasses import dataclass
 import pathlib
 from typing import Iterable, Sequence, overload
 
-from pydantic import RootModel
+from pydantic import BaseModel, RootModel
 
 from repostats.metrics import github
 from repostats.metrics.models import State
@@ -13,8 +12,7 @@ from repostats.metrics.models import State
 MAX_PRS_PER_PAGE = 1000
 
 
-@dataclass(frozen=True)
-class PRMetric:
+class PRMetric(BaseModel):
     repo: str
     head_ref: str
     base_ref: str
@@ -27,10 +25,7 @@ class PRMetric:
 class PRAnalyzer:
     def __init__(self, client: github.Client, repos: Sequence[str]) -> None:
         self.client = client
-        self.repos: list[github.Repo] = []
-        for repo in repos:
-            owner, repo_name, *_ = repo.split("/")
-            self.repos.append(github.Repo(owner, repo_name))
+        self.repos = _get_repos(repos)
 
     @overload
     async def get_metrics(self) -> Sequence[PRMetric]:
@@ -82,6 +77,16 @@ def map_graphql_to_metric(graphql: github.GraphQLPRMetrics) -> Iterable[PRMetric
             state=pr.node.state,
             changed_files=pr.node.changed_files,
         )
+
+
+def _get_repos(names: Iterable[str]) -> Sequence[github.Repo]:
+    repos: list[github.Repo] = []
+    for repo in names:
+        owner, repo_name, *_ = repo.split("/")
+        repos.append(github.Repo(owner, repo_name))
+    return repos
+
+
 def export_metrics_to_json(metrics: Iterable[PRMetric], path: str) -> None:
     class PRMetricList(RootModel):
         root: tuple[PRMetric, ...]
