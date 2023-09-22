@@ -2,7 +2,10 @@ import asyncio
 import datetime
 import itertools
 from dataclasses import dataclass
+import pathlib
 from typing import Iterable, Sequence, overload
+
+from pydantic import RootModel
 
 from repostats.metrics import github
 from repostats.metrics.models import State
@@ -79,3 +82,10 @@ def map_graphql_to_metric(graphql: github.GraphQLPRMetrics) -> Iterable[PRMetric
             state=pr.node.state,
             changed_files=pr.node.changed_files,
         )
+def export_metrics_to_json(metrics: Iterable[PRMetric], path: str) -> None:
+    class PRMetricList(RootModel):
+        root: tuple[PRMetric, ...]
+
+    model = PRMetricList(root=tuple(metrics))
+    contents = model.model_dump_json(indent=4)
+    pathlib.Path(path).write_text(contents)

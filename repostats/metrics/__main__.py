@@ -1,6 +1,5 @@
 import asyncio
 import os
-from pprint import pprint
 
 from repostats.metrics import github, metrics
 
@@ -16,7 +15,7 @@ async def main() -> None:
         client, ["thebricks/MirroredSouls", "vernalhav/levada"]
     )
     data = await analyzer.get_metrics(3)
-    pprint(data)
+    metrics.export_metrics_to_json(data, "data/metrics.json")
 
 
 if __name__ == "__main__":
