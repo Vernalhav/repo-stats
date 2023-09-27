@@ -16,7 +16,7 @@ class Args:
 
 
 def get_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(prog="python3 -m repostats")
 
     parser.add_argument(
         "repos",

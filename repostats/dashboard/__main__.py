@@ -10,7 +10,7 @@ class Args:
 
 
 def get_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(prog="python3 -m repostats.dashboard")
 
     parser.add_argument(
         "file",
