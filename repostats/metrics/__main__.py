@@ -1,7 +1,7 @@
 import asyncio
 import os
 
-from repostats.metrics import github, metrics
+from repostats import metrics
 
 
 async def main() -> None:
@@ -10,12 +10,9 @@ async def main() -> None:
     dotenv.load_dotenv()
 
     token = os.getenv("GITHUB_TOKEN", default="")
-    client = github.Client(token)
-    analyzer = metrics.PRAnalyzer(
-        client, ["thebricks/MirroredSouls", "vernalhav/levada"]
+    await metrics.to_json(
+        ["thebricks/MirroredSouls", "vernalhav/levada"], token, "data/metrics.json"
     )
-    data = await analyzer.get_metrics(3)
-    metrics.export_metrics_to_json(data, "data/metrics.json")
 
 
 if __name__ == "__main__":
