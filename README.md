@@ -4,8 +4,7 @@ in the dashboard are the average number of files changed per PR and the number o
 per release.
 
 ## Screenshots
-![image](https://github.com/Vernalhav/repo-stats/assets/40337396/84a81cb0-aec5-4c33-aeea-61c01046f05f)
-
+![image](https://github.com/Vernalhav/repo-stats/assets/40337396/666ca3b4-872d-49e7-931a-382b112dae34)
 
 ## Installation
 After creating and activating a virtual environment, run
@@ -20,8 +19,8 @@ pip install -r requirements.dev.txt
 
 ## Usage
 The program contains 3 separate CLIs, described below. To use the main CLI and the Metrics CLI, you must have
-an environment variable called `GITHUB_TOKEN` containing a Personal Access Token to the GitHub API. If a `.env`
-file is at the current working directory, it will be loaded.
+an environment variable called `GITHUB_TOKEN` containing a Personal Access Token to the GitHub API. If there
+is a `.env` file is in the current working directory, it will be loaded.
 
 ### Main CLI
 Downloads metrics and runs dashboard server.
