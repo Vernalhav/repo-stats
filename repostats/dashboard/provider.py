@@ -11,8 +11,9 @@ import pandas as pd
 from repostats.metrics.metrics import PRMetric
 
 
-class HotfixesByRelease(NamedTuple):
+class HotfixesPerRelease(NamedTuple):
     release: str
+    date: datetime.datetime
     hotfixes: int
 
 
@@ -24,13 +25,13 @@ class Provider:
         self.is_hotfix = is_gitflow_hotfix
 
     def get_files_changed(self, repos: Sequence[str]) -> pd.DataFrame:
-        return self.df[self.df.repo.isin(repos)][["repo", "changed_files"]]
+        return self.df[self.df.repo.isin(repos)].loc[:, ("repo", "changed_files")]
 
     def get_hotfixes_per_release(self, repo: str) -> pd.DataFrame:
         prs = [pr for pr in self.metrics if pr.repo.casefold() == repo.casefold()]
         releases = determine_hotfix_releases(prs)
         return pd.DataFrame(
-            (release for release in releases), columns=["release", "hotfixes"]
+            (release for release in releases), columns=["release", "date", "hotfixes"]
         )
 
     @staticmethod
@@ -45,7 +46,7 @@ def import_metrics_from_json(path: str | pathlib.Path) -> Sequence[PRMetric]:
     return tuple(PRMetric(**metric) for metric in data)
 
 
-def determine_hotfix_releases(prs: Sequence[PRMetric]) -> Sequence[HotfixesByRelease]:
+def determine_hotfix_releases(prs: Sequence[PRMetric]) -> Sequence[HotfixesPerRelease]:
     prs = sorted(
         prs,
         key=lambda pr: pr.merged_at.replace(tzinfo=None)
@@ -58,10 +59,12 @@ def determine_hotfix_releases(prs: Sequence[PRMetric]) -> Sequence[HotfixesByRel
     for pr in prs:
         if is_gitflow_release(pr):
             release = pr.head_ref
-            releases.append(release)
+            releases.append((release, pr.merged_at))
         if is_gitflow_hotfix(pr):
             counts[release] += 1
-    return tuple(HotfixesByRelease(release, counts[release]) for release in releases)
+    return tuple(
+        HotfixesPerRelease(*release, counts[release[0]]) for release in releases
+    )
 
 
 def is_gitflow_release(pr: PRMetric) -> bool:

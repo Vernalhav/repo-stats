@@ -16,7 +16,7 @@ class Dashboard:
         self.app.layout = html.Div(
             className="container",
             children=[
-                html.Div(children="Github Repository Metrics"),
+                html.H3("Github Repository Metrics"),
                 html.Hr(),
                 dcc.Checklist(options=repos, value=repos, id="files-dropdown"),
                 dcc.Graph(
@@ -92,7 +92,7 @@ class Dashboard:
     def update_hotfix_graph(self, repo):
         data = self.provider.get_hotfixes_per_release(repo)
         fig = px.bar(
-            data,
+            data.loc[:, ("release", "hotfixes")],
             x="release",
             y="hotfixes",
         )
