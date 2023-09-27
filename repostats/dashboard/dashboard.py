@@ -74,15 +74,16 @@ class Dashboard:
         repos = repos or []
         repos = repos if not isinstance(repos, str) else [repos]
         data = self.provider.get_files_changed(repos)
-        fig = px.box(
-            data,
+        fig = px.bar(
+            data.groupby("repo").mean().reset_index(),
             orientation="h",
             x="changed_files",
             y="repo",
         )
-        fig.update_xaxes(fixedrange=True)
-        fig.update_yaxes(fixedrange=True)
-        fig.update_layout(hovermode=False)
+        fig.update_xaxes(fixedrange=True, title="Avg files changed per PR")
+        fig.update_yaxes(
+            fixedrange=True, title="Repo", ticksuffix=" " * 3, type="category"
+        )
         return fig
 
     @callback(
