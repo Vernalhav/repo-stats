@@ -9,7 +9,7 @@ from pydantic import BaseModel, RootModel
 from repostats.metrics import github
 from repostats.metrics.models import State
 
-MAX_PRS_PER_PAGE = 1000
+MAX_PRS_PER_PAGE = 20
 
 
 class PRMetric(BaseModel):

@@ -11,7 +11,7 @@ T = TypeVar("T")
 
 class PageInfo(BaseModel):
     has_next: bool = Field(alias="hasNextPage")
-    end_cursor: Cursor = Field(alias="endCursor")
+    end_cursor: Cursor | None = Field(alias="endCursor")
 
 
 class PRNode(BaseModel):
