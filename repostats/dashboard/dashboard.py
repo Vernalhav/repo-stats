@@ -6,12 +6,56 @@ from repostats.dashboard.provider import Provider
 
 
 class Dashboard:
-    def __init__(self) -> None:
+    def __init__(self, provider: Provider) -> None:
+        if len(provider.metrics) == 0:
+            raise ValueError("No PRs found!")
+
         self.app = Dash(__name__, suppress_callback_exceptions=True)
+        self.provider = provider
+        self._init_layout()
+
         apply_callbacks(self)
 
-        self.provider = Provider.from_json("data/metrics.json")
+    @callback(Output("files-graph", "figure"), Input("files-dropdown", "value"))
+    def update_files_graph(self, repos):
+        repos = repos or []
+        repos = repos if not isinstance(repos, str) else [repos]
+        data = self.provider.get_files_changed(repos)
+        fig = px.bar(
+            data.groupby("repo").mean().reset_index(),
+            orientation="h",
+            x="changed_files",
+            y="repo",
+        )
+        fig.update_xaxes(fixedrange=True, title="Avg files changed per PR")
+        fig.update_yaxes(
+            fixedrange=True, title="Repo", ticksuffix=" " * 3, type="category"
+        )
+        return fig
 
+    @callback(
+        [Output("hotfix-graph", "figure"), Output("avg-hotfixes", "children")],
+        Input("hotfix-dropdown", "value"),
+    )
+    def update_hotfix_graph(self, repo):
+        data = self.provider.get_hotfixes_per_release(repo)
+        fig = px.bar(
+            data.loc[:, ("release", "hotfixes")],
+            x="release",
+            y="hotfixes",
+        )
+        yticks = (
+            list(range(0, int(data.hotfixes.max() + 1))) if len(data.hotfixes) else [0]
+        )
+        fig.update_xaxes(fixedrange=True, type="category", showgrid=False)
+        fig.update_yaxes(
+            fixedrange=True,
+            tickvals=yticks,
+        )
+        avg = data.hotfixes.mean() if len(data.hotfixes) else 0
+        return fig, round(avg, 1)
+
+    def _init_layout(self):
         repos = list(set(metric.repo for metric in self.provider.metrics))
         self.app.layout = html.Div(
             className="container",
@@ -69,46 +113,7 @@ class Dashboard:
             ],
         )
 
-    @callback(Output("files-graph", "figure"), Input("files-dropdown", "value"))
-    def update_files_graph(self, repos):
-        repos = repos or []
-        repos = repos if not isinstance(repos, str) else [repos]
-        data = self.provider.get_files_changed(repos)
-        fig = px.bar(
-            data.groupby("repo").mean().reset_index(),
-            orientation="h",
-            x="changed_files",
-            y="repo",
-        )
-        fig.update_xaxes(fixedrange=True, title="Avg files changed per PR")
-        fig.update_yaxes(
-            fixedrange=True, title="Repo", ticksuffix=" " * 3, type="category"
-        )
-        return fig
-
-    @callback(
-        [Output("hotfix-graph", "figure"), Output("avg-hotfixes", "children")],
-        Input("hotfix-dropdown", "value"),
-    )
-    def update_hotfix_graph(self, repo):
-        data = self.provider.get_hotfixes_per_release(repo)
-        fig = px.bar(
-            data.loc[:, ("release", "hotfixes")],
-            x="release",
-            y="hotfixes",
-        )
-        yticks = (
-            list(range(0, int(data.hotfixes.max() + 1))) if len(data.hotfixes) else [0]
-        )
-        fig.update_xaxes(fixedrange=True, type="category", showgrid=False)
-        fig.update_yaxes(
-            fixedrange=True,
-            tickvals=yticks,
-        )
-        avg = data.hotfixes.mean() if len(data.hotfixes) else 0
-        return fig, round(avg, 1)
-
 
 if __name__ == "__main__":
-    dashboard = Dashboard()
+    dashboard = Dashboard(Provider.from_json("data/metrics.json"))
     dashboard.app.run(debug=True)
