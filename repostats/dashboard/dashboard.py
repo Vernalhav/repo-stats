@@ -112,8 +112,3 @@ class Dashboard:
                 ),
             ],
         )
-
-
-if __name__ == "__main__":
-    dashboard = Dashboard(Provider.from_json("data/metrics.json"))
-    dashboard.app.run(debug=True)
