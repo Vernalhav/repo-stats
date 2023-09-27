@@ -4,7 +4,8 @@ in the dashboard are the average number of files changed per PR and the number o
 per release.
 
 ## Screenshots
-![image](https://github.com/Vernalhav/repo-stats/assets/40337396/92cd4671-b2fd-4053-90fa-6038cdb17ade)
+![image](https://github.com/Vernalhav/repo-stats/assets/40337396/84a81cb0-aec5-4c33-aeea-61c01046f05f)
+
 
 ## Installation
 After creating and activating a virtual environment, run
